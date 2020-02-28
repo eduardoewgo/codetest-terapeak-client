@@ -1,0 +1,16 @@
+<cdk-virtual-scroll-viewport itemSize="18" style="height:90vh">
+  <table class="table">
+    <thead>
+    <tr>
+      <th *ngFor="let col of columns" scope="col">{{col}}</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *cdkVirtualFor="let el of data; trackBy: trackByFn">
+      <td *ngFor="let f of fields">
+        {{ el[f] }}
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</cdk-virtual-scroll-viewport>
