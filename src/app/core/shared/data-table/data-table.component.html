@@ -1,4 +1,4 @@
-<cdk-virtual-scroll-viewport itemSize="18" style="height:90vh">
+<cdk-virtual-scroll-viewport itemSize="45" style="height:63vh">
   <table class="table">
     <thead>
     <tr>
@@ -8,7 +8,10 @@
     <tbody>
     <tr *cdkVirtualFor="let el of data; trackBy: trackByFn">
       <td *ngFor="let f of fields">
-        {{ el[f] }}
+        <!-- Identify type and show accordingly -->
+        <img *ngIf="f.type === 'image'" [src]="el[f.value]" alt="Item image" height="45">
+        <div *ngIf="f.type === 'string'">{{el[f.value]}}</div>
+        <div *ngIf="f.type === 'currency'">$ {{el[f.value]}}</div>
       </td>
     </tr>
     </tbody>

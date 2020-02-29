@@ -1,13 +1,11 @@
-export enum CONDITION {
-  'New', 'Used', 'Well worn'
-}
+export const Conditions = ['New', 'Used', 'Well worn'];
 
 export interface Item {
   name: string;
   description?: string;
   price: number;
   location?: string;
-  condition: CONDITION;
+  condition: string;
   image: string;
   createdAt: Date;
 }

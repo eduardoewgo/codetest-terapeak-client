@@ -14,7 +14,13 @@ export class ItemsService {
   constructor(private apiService: ApiService) {
   }
 
-  find(params: { keyword?: string, minPrice?: string, maxPrice?: string, location?: string, condition?: string } = {}): Observable<Item[]> {
+  find(params: {
+    keyword?: string,
+    minPrice?: string,
+    maxPrice?: string,
+    location?: string,
+    condition?: string[]
+  } = {}): Observable<Item[]> {
     return this.apiService.get(`${this.path}`, new HttpParams({fromObject: params}));
   }
 }

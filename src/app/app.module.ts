@@ -7,21 +7,28 @@ import {DataTableComponent} from './core/shared/data-table/data-table.component'
 import {HomeComponent} from './home/home.component';
 import {HttpClientModule} from '@angular/common/http';
 import {ScrollingModule} from '@angular/cdk/scrolling';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {EnumToArrayPipe} from './core/pipes/enum-to-array.pipe';
+import {NumericDirective} from './core/directives/numeric.directive';
 
 
 @NgModule({
   declarations: [
     AppComponent,
     DataTableComponent,
-    HomeComponent
+    HomeComponent,
+    EnumToArrayPipe,
+    NumericDirective,
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
-    ScrollingModule
+    ScrollingModule,
+    FormsModule,
+    ReactiveFormsModule
   ],
-  providers: [],
+  providers: [EnumToArrayPipe],
   bootstrap: [AppComponent]
 })
 export class AppModule {
