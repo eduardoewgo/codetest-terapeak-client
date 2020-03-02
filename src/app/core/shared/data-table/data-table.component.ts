@@ -12,7 +12,7 @@ export class DataTableComponent implements OnInit, AfterViewInit {
   @Input() data: any[] = [];
   @Input() fields: { type: string, value: any }[] = [];
   @Input() columns: string[] = [];
-  @Output() scroll = new EventEmitter<{ start: number, end: number }>();
+  @Output() scroll = new EventEmitter<{ start: number, end: number, total: number }>();
 
   constructor() {
   }
@@ -23,7 +23,7 @@ export class DataTableComponent implements OnInit, AfterViewInit {
   ngAfterViewInit(): void {
     this.virtualScroll.renderedRangeStream
       .subscribe(event => {
-        this.scroll.emit(event);
+        this.scroll.emit({...event, total: this.virtualScroll.getDataLength()});
       });
   }
 

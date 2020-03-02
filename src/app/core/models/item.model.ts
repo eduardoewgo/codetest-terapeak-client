@@ -11,11 +11,11 @@ export interface Item {
 }
 
 export interface ItemFilter {
-  keyword?: string,
-  minPrice?: string,
-  maxPrice?: string,
-  location?: string,
-  conditions?: string[],
-  offset: string,
-  limit: string
+  keyword?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  location?: string;
+  conditions?: string[];
+  offset: string;
+  limit: string;
 }

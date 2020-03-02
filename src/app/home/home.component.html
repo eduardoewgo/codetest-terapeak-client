@@ -40,6 +40,6 @@
   </form>
 </div>
 <div class="container-fluid px-5 pt-3">
-  <app-data-table [data]="$items | async" [fields]="fields" [columns]="columns"
+  <app-data-table [data]="items" [fields]="fields" [columns]="columns"
                   (scroll)="onDataScroll($event)"></app-data-table>
 </div>

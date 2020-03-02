@@ -1,7 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {Conditions, Item, ItemFilter} from '../core/models';
 import {ItemsService} from '../core/services';
-import {Observable} from 'rxjs';
 import {FormBuilder, FormGroup, FormArray, FormControl} from '@angular/forms';
 import {ActivatedRoute, NavigationExtras, Params, Router} from '@angular/router';
 
@@ -12,7 +11,7 @@ import {ActivatedRoute, NavigationExtras, Params, Router} from '@angular/router'
 })
 export class HomeComponent implements OnInit {
 
-  public $items: Observable<Item[]> = new Observable<Item[]>();
+  public items: Item[] = [];
   public fields = [
     {type: 'image', value: 'image'},
     {type: 'string', value: 'name'},
@@ -21,6 +20,7 @@ export class HomeComponent implements OnInit {
   ];
   public columns = ['Image', 'Name', 'Location', 'Price'];
 
+  public pagination = {offset: 0, limit: 50, reachedEnd: false};
   public itemFilters: ItemFilter;
   public itemFilterForm: FormGroup;
   public cities: string[] = ['Boston', 'New York', 'Toronto'];
@@ -40,12 +40,28 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.itemFilters = this.cleanObj({...this.itemFilterForm.value}) as ItemFilter;
+    this.itemFilters = this.cleanObj({
+      ...this.itemFilterForm.value,
+      offset: `${this.pagination.offset}`,
+      limit: `${this.pagination.limit}`
+    }) as ItemFilter;
     this.getItems(this.itemFilters);
   }
 
   getItems(itemFilter: ItemFilter): void {
-    this.$items = this.itemsService.find(itemFilter);
+    // Validate if it's the end
+    if (this.pagination.reachedEnd) {
+      return;
+    }
+
+    // Request data
+    this.itemsService.find(itemFilter).subscribe(data => {
+      if (data.length < this.pagination.limit) {
+        this.pagination.reachedEnd = true;
+        console.log(`Reached end`);
+      }
+      this.items = [...this.items, ...data];
+    });
   }
 
   onConditionCheckBoxChange(e: any): void {
@@ -64,20 +80,31 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  onDataScroll(e: { start: number, end: number }): void {
-    const itemFilter: ItemFilter = {
-      offset: (e.end).toString(),
-      limit: (e.end - e.start).toString(),
-      ...this.itemFilters
-    };
-    console.log(`onScroll`, itemFilter);
+  onDataScroll(e: { start: number, end: number, total: number }): void {
+    // Request more data once it gets close to the end
+    if (e.end > (e.total - 25)) {
+      const itemFilter: ItemFilter = {
+        ...this.itemFilters,
+        offset: `${e.total}`,
+        limit: `${this.pagination.limit}`,
+      };
+      this.getItems(itemFilter);
+    }
+
+    // console.log(`onScroll e`, e);
   }
 
   onSearchSubmit(): void {
-    this.itemFilters = this.cleanObj({...this.itemFilterForm.value}) as ItemFilter;
+    this.itemFilters = this.cleanObj({
+      ...this.itemFilterForm.value,
+      offset: `${this.pagination.offset}`,
+      limit: `${this.pagination.limit}`
+    }) as ItemFilter;
 
     // Request for filtered items
-    this.$items = this.itemsService.find(this.itemFilters);
+    this.itemsService.find(this.itemFilters).subscribe(data => {
+      this.items = [...data];
+    });
 
     // Update URL
     const navigationExtras: NavigationExtras = {
@@ -89,20 +116,24 @@ export class HomeComponent implements OnInit {
   cleanObj(obj: {}) {
     // This should be in a utils.ts
     // Basic validation
-    let _obj = {};
+    // tslint:disable-next-line:variable-name
+    const _obj = {};
     Object.keys(obj).forEach(prop => {
       if (obj[prop]) {
         // Check if it's a valid string
-        if (typeof obj[prop] == 'string' && obj[prop].trim() != '')
+        if (typeof obj[prop] == 'string' && obj[prop].trim() != '') {
           _obj[prop] = obj[prop];
+        }
 
         // Check if it's a valid number
-        if (typeof obj[prop] == 'number' && !isNaN(obj[prop]))
+        if (typeof obj[prop] == 'number' && !isNaN(obj[prop])) {
           _obj[prop] = obj[prop];
+        }
 
         // Check if it's a valid array
-        if (Array.isArray(obj[prop]) && obj[prop].length > 0)
+        if (Array.isArray(obj[prop]) && obj[prop].length > 0) {
           _obj[prop] = obj[prop];
+        }
       }
     });
     return _obj;
