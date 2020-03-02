@@ -9,3 +9,13 @@ export interface Item {
   image: string;
   createdAt: Date;
 }
+
+export interface ItemFilter {
+  keyword?: string,
+  minPrice?: string,
+  maxPrice?: string,
+  location?: string,
+  conditions?: string[],
+  offset: string,
+  limit: string
+}

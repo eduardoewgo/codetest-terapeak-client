@@ -1,9 +1,9 @@
 import {Component, OnInit} from '@angular/core';
-import {Conditions, Item} from '../core/models';
+import {Conditions, Item, ItemFilter} from '../core/models';
 import {ItemsService} from '../core/services';
 import {Observable} from 'rxjs';
 import {FormBuilder, FormGroup, FormArray, FormControl} from '@angular/forms';
-import {ActivatedRoute, NavigationExtras, Router} from '@angular/router';
+import {ActivatedRoute, NavigationExtras, Params, Router} from '@angular/router';
 
 @Component({
   selector: 'app-home',
@@ -21,29 +21,35 @@ export class HomeComponent implements OnInit {
   ];
   public columns = ['Image', 'Name', 'Location', 'Price'];
 
-  public filterForm: FormGroup;
+  public itemFilters: ItemFilter;
+  public itemFilterForm: FormGroup;
   public cities: string[] = ['Boston', 'New York', 'Toronto'];
   public conditions: string[] = Conditions;
 
   constructor(private route: ActivatedRoute, private router: Router,
               private itemsService: ItemsService, private formBuilder: FormBuilder) {
     this.route.queryParams.subscribe(params => {
-      this.filterForm = this.formBuilder.group({
-        keyword: params.keyword || '',
-        minPrice: params.minPrice || '',
-        maxPrice: params.maxPrice || '',
-        location: params.location || '',
-        conditionsCheckbox: this.formBuilder.array(params.conditionsCheckbox || [])
+      this.itemFilterForm = this.formBuilder.group({
+        keyword: params.keyword,
+        minPrice: Number(params.minPrice),
+        maxPrice: Number(params.maxPrice),
+        location: params.location,
+        conditions: this.formBuilder.array(params.conditions || [])
       });
     });
   }
 
   ngOnInit(): void {
-    this.$items = this.itemsService.find();
+    this.itemFilters = this.cleanObj({...this.itemFilterForm.value}) as ItemFilter;
+    this.getItems(this.itemFilters);
   }
 
-  onConditionCheckBoxChange(e: any) {
-    const checkArray: FormArray = this.filterForm.get('conditionsCheckbox') as FormArray;
+  getItems(itemFilter: ItemFilter): void {
+    this.$items = this.itemsService.find(itemFilter);
+  }
+
+  onConditionCheckBoxChange(e: any): void {
+    const checkArray: FormArray = this.itemFilterForm.get('conditions') as FormArray;
     if (e.target.checked) {
       checkArray.push(new FormControl(e.target.value));
     } else {
@@ -58,11 +64,48 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  onDataScroll(e: { start: number, end: number }): void {
+    const itemFilter: ItemFilter = {
+      offset: (e.end).toString(),
+      limit: (e.end - e.start).toString(),
+      ...this.itemFilters
+    };
+    console.log(`onScroll`, itemFilter);
+  }
+
   onSearchSubmit(): void {
+    this.itemFilters = this.cleanObj({...this.itemFilterForm.value}) as ItemFilter;
+
+    // Request for filtered items
+    this.$items = this.itemsService.find(this.itemFilters);
+
+    // Update URL
     const navigationExtras: NavigationExtras = {
-      queryParams: {...this.filterForm.value}
+      queryParams: this.itemFilters
     };
     this.router.navigate([], navigationExtras);
+  }
+
+  cleanObj(obj: {}) {
+    // This should be in a utils.ts
+    // Basic validation
+    let _obj = {};
+    Object.keys(obj).forEach(prop => {
+      if (obj[prop]) {
+        // Check if it's a valid string
+        if (typeof obj[prop] == 'string' && obj[prop].trim() != '')
+          _obj[prop] = obj[prop];
+
+        // Check if it's a valid number
+        if (typeof obj[prop] == 'number' && !isNaN(obj[prop]))
+          _obj[prop] = obj[prop];
+
+        // Check if it's a valid array
+        if (Array.isArray(obj[prop]) && obj[prop].length > 0)
+          _obj[prop] = obj[prop];
+      }
+    });
+    return _obj;
   }
 
 }

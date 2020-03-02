@@ -1,5 +1,5 @@
 <div class="container-fluid px-5 pt-3">
-  <form [formGroup]="filterForm" (ngSubmit)="onSearchSubmit()" novalidate>
+  <form [formGroup]="itemFilterForm" (ngSubmit)="onSearchSubmit()" novalidate>
     <div class="row mb-2">
       <div class="col-md-12">
         <label for="keyword">Keyword</label>
@@ -40,5 +40,6 @@
   </form>
 </div>
 <div class="container-fluid px-5 pt-3">
-  <app-data-table [data]="$items | async" [fields]="fields" [columns]="columns"></app-data-table>
+  <app-data-table [data]="$items | async" [fields]="fields" [columns]="columns"
+                  (scroll)="onDataScroll($event)"></app-data-table>
 </div>
