@@ -24,17 +24,26 @@ export class HomeComponent implements OnInit {
   public itemFilters: ItemFilter;
   public itemFilterForm: FormGroup;
   public cities: string[] = ['Boston', 'New York', 'Toronto'];
-  public conditions: string[] = Conditions;
+  public conditions: { value: string, checked: boolean }[] = Conditions.map(el => ({value: el, checked: false}));
 
   constructor(private route: ActivatedRoute, private router: Router,
               private itemsService: ItemsService, private formBuilder: FormBuilder) {
     this.route.queryParams.subscribe(params => {
+
+      // Query conditionsParam
+      const conditionsParam = params.conditions ? Array.isArray(params.conditions) ? params.conditions : [params.conditions] : [];
+      // Setting UI checked values
+      this.conditions = this.conditions.map(el => {
+        el.checked = (conditionsParam.filter(c => c == el.value).length > 0);
+        return el;
+      });
+
       this.itemFilterForm = this.formBuilder.group({
         keyword: params.keyword,
         minPrice: Number(params.minPrice),
         maxPrice: Number(params.maxPrice),
         location: params.location,
-        conditions: this.formBuilder.array(params.conditions || [])
+        conditions: this.formBuilder.array(conditionsParam)
       });
     });
   }
